@@ -1,0 +1,7 @@
+# Materials to feed simulator
+#
+# format:
+#   key storke				expected string
+#
+# http://zonble.twbbs.org/archives/2008_05/1005.php
+gl4sm3g6294284504rup e; x;6<E>		少女時代大戰金剛狼
