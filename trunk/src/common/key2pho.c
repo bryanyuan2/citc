@@ -11,8 +11,7 @@
  * See the file "COPYING" for information on usage and redistribution
  * of this file.
  *
- * jswirl Oct. 2010: the changes made to 0.3.2 is only for prototyping
- * purposes and should be completely rewritten and not used for production
+ * Oct. 2010: the changes made to 0.3.2 is only for prototyping purposes only
  */
 
 /** 
