@@ -11,14 +11,12 @@
  * See the file "COPYING" for information on usage and redistribution
  * of this file.
  *
- * jswirl Oct. 2010: the changes made to 0.3.2 is only for prototyping
- * purposes and should be completely rewritten and not used for production
+ * Oct. 2010: the changes made to 0.3.2 is only for prototyping purposes only
  */
 
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
 
 #include "chewing-utf8-util.h"
 #include "global.h"
@@ -33,8 +31,9 @@
 #include <yajl/yajl_parse.h>
 #include <yajl/yajl_gen.h>
 
-#define SERVER_URL "http://ken.cse.tw/citc/"
+#define SERVER_URL "http://citc.cse.tw/"
 #define PAGE_ENTRIES 10
+#define USER_REPORT 1
 
 #define JSON_NULL 0
 #define JSON_RECVD_KEY 1
@@ -46,6 +45,7 @@
 
 extern int chewing_lifetime;
 static HASH_ITEM *pItemLast;
+CURL *curl;
 UserPhraseData entry[PAGE_ENTRIES];
 char entry_id[PAGE_ENTRIES][64], json_flag = 0;
 int entries = 0, entry_pos = 0;
@@ -170,13 +170,13 @@ static int phrase(void * ctx, const unsigned char * stringVal, unsigned int stri
 	{
 		char crc_key[256];
 		strncpy(crc_key, stringVal, stringLen);
-		printf("Retrieved page for \"%s\"\n", crc_key);
+/*                printf("Retrieved page for \"%s\"\n", crc_key);*/
 		json_flag = JSON_RECVD_KEY;
 	}
 	else
 	{
 		strncpy(entry[entries].wordSeq, stringVal, stringLen);
-		printf(", phrase: \"%s\"\n", entry[entries].wordSeq);
+/*                printf(", phrase: \"%s\"\n", entry[entries].wordSeq);*/
 		++entries; // only after parsing the phrase
 		json_flag = JSON_RECVD_PHRASES;
 	}
@@ -188,7 +188,7 @@ static int phrase(void * ctx, const unsigned char * stringVal, unsigned int stri
 static int id(void * ctx, const unsigned char * stringVal, unsigned int stringLen)
 {
     strncpy(entry_id[entries], stringVal, stringLen);
-    printf("id: \"%s\"", entry_id[entries]);
+/*    printf("id: \"%s\"", entry_id[entries]);*/
     return 1;
 }
 
@@ -203,22 +203,22 @@ size_t post_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 	yajl_parser_config cfg = {1, 1};
 
 	memcpy(buf, ptr, size * nmemb);
-	buf[size * nmemb + 1] = '\0';
+	buf[size * nmemb] = '\0';
 
 	// process json here
 	hand = yajl_alloc(&callbacks, &cfg,  NULL, NULL);
-	stat = yajl_parse(hand, buf, size * nmemb + 1);
+	stat = yajl_parse(hand, buf, size * nmemb);
 
 	if (stat != yajl_status_ok && stat != yajl_status_insufficient_data)
 	{
-		unsigned char *str = yajl_get_error(hand, 1, buf, size * nmemb + 1);
+		unsigned char *str = yajl_get_error(hand, 1, buf, size * nmemb);
 		fprintf(stderr, (const char *) str);
 		yajl_free_error(hand, str);
 	}
 
 	yajl_free(hand);
 
-	return 1;
+	return 0;
 }
 
 /* dont output if no server reply */
@@ -227,35 +227,44 @@ size_t post_quiet_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 	return 0;
 }
 
-/* send request to remote server */
+/*
+ * send request to remote server
+ * TODO: persistent connection
+ *
+ * */
 int sendPostCurl(int op, char *key, const char wordSeq[])
 {
-	CURL *curl;
 	CURLcode res;
 	char postbuf[1024];
 	char *server_url;
-
-	curl = curl_easy_init();
+	FILE* fpn;
+	char *buf;
+/*        printf("------>%s\n",key);*/
+	if(!curl)
+		curl = curl_easy_init();
 
 	if(curl)
 	{
-		switch(op)
-		{
-			case LOOKUP: sprintf(postbuf, "op=0&key=%s", key); break;
-			case UPDATE: sprintf(postbuf, "op=1&choice=%s", key); break;
-			case INSERT: sprintf(postbuf, "op=2&key=%s&insert=%s", key, wordSeq);	break;
-			default: break;
+		if( getenv("CHEWING_USER_FEEDBACK") != null ){
+			switch(op)
+			{
+				case LOOKUP: sprintf(postbuf, "op=0&key=%s", key); break;
+				case UPDATE: sprintf(postbuf, "op=1&choice=%s", key); break;
+				case INSERT: sprintf(postbuf, "op=2&key=%s&insert=%s", key, wordSeq);	break;
+				default: break;
+			}
 		}
-
+		else{
+			switch(op)
+			{
+				case LOOKUP: sprintf(postbuf, "op=0&key=%s", key); break;
+				default: break;
+			}
+		}
 		curl_easy_setopt(curl, CURLOPT_URL, getenv("CHEWING_SERVER_URL") ? getenv("CHEWING_SERVER_URL") : SERVER_URL);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, op == LOOKUP ? post_callback : post_quiet_callback);
 		res = curl_easy_perform(curl);
-
-		//if(CURLE_OK != res)
-			//perror("curl error");
-
-		curl_easy_cleanup(curl);
 
 		return 0;
 	}
@@ -347,7 +356,7 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 
 	char buf[256];
 	KenCodeFromUint(buf, phoneSeq);
-	printf("UserGetPhraseFirst: %s\n", buf);
+/*        printf("UserGetPhraseFirst: %s\n", buf);*/
 
 
 	if(len < 2)
@@ -365,11 +374,8 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 	if(!PhoneSeqTheSame(entry[0].phoneSeq, phoneSeq))
 	{
 		json_flag = JSON_NULL;
-
 		entries = 0;
-
 		entry_pos = 0;
-
 		for(i = 0; i < PAGE_ENTRIES; ++i)
 		{
 			if(entry[i].phoneSeq != NULL)
@@ -383,19 +389,21 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 				free(entry[i].wordSeq);
 
 			entry[i].wordSeq = (char *)calloc(256, sizeof(char));
-
 			// we don't have frequency information from the backend yet:
 			srand(time(0));
-			entry[i].maxfreq = rand() % MAX_ALLOW_FREQ;
+			entry[i].maxfreq = MAX_ALLOW_FREQ;
 			entry[i].origfreq = 1;
 			entry[i].recentTime = chewing_lifetime - 1;
-			entry[i].userfreq = rand() % MAX_ALLOW_FREQ;
+			entry[i].userfreq = MAX_ALLOW_FREQ;
 		}
 
 		if(curlLookup(phoneSeq) < 0 || entries == 0)
 		{
 			printf("Lookup Failed.\n");
-			return NULL;
+			pItemLast = HashFindPhonePhrase(phoneSeq, NULL);
+			if (!pItemLast)
+				return NULL;
+			return &(pItemLast->data);
 		}
 	}
 
@@ -414,11 +422,16 @@ UserPhraseData *UserGetPhraseNext( const uint16 phoneSeq[] )
 
 	char buf[256];
 	KenCodeFromUint(buf, phoneSeq);
-	printf("UserGetPhraseNext: %s\n", buf);
+/*        printf("UserGetPhraseNext: %s\n", buf);*/
 
 	if(PhoneSeqTheSame(entry[0].phoneSeq, phoneSeq))
 		return entry_pos < PAGE_ENTRIES ? &(entry[entry_pos++]) : NULL;
 	else
-		return NULL; // for now
+	{
+		pItemLast = HashFindPhonePhrase(phoneSeq, pItemLast);
+		if (!pItemLast)
+			return NULL;
+		return &(pItemLast->data);
+	}
 }
 

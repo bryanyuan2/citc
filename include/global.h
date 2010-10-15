@@ -25,6 +25,7 @@
 #define FULLSHAPE_MODE 1
 #define HALFSHAPE_MODE 0
 
+
 /* specified to Chewing API */
 #ifdef WIN32
 #define CHEWING_DLL_IMPORT __declspec(dllimport)

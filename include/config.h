@@ -2,7 +2,7 @@
 /* include/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you want native library runtime debugging code enabled */
-#define ENABLE_DEBUG 1
+/* #undef ENABLE_DEBUG */
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
@@ -30,7 +30,7 @@
 #define HAVE_MKDIR 1
 
 /* Define to 1 if you have the <ncursesw/ncurses.h> header file. */
-/* #undef HAVE_NCURSESW_NCURSES_H */
+#define HAVE_NCURSESW_NCURSES_H 1
 
 /* Define to 1 if you have the <ncurses/ncurses.h> header file. */
 /* #undef HAVE_NCURSES_NCURSES_H */

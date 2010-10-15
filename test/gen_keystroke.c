@@ -267,6 +267,7 @@ int main( int argc, char *argv[] )
 	int ch;
 	int width, height;
 	int add_phrase_length;
+	int check_ch=1;
 
 	if ( argc < 2 ) {
 		fprintf( stderr, "usage: genkeystroke filename\n" );
@@ -318,7 +319,21 @@ int main( int argc, char *argv[] )
 	chewing_set_phraseChoiceRearward( ctx, 1 );
 
 	clear();
-	mvaddstr( 0, 0, "Any key to start testing..." );
+/*        while(check_ch){*/
+/*                ch = getch();*/
+/*                if(ch == 121 || ch == 89){*/
+/*                        UserStatus("y");*/
+/*                        check_ch=0;*/
+/*                }*/
+/*                else if(ch == 110 || ch == 78){*/
+/*                        UserStatus("n");*/
+/*                }*/
+/*                else{*/
+/*                        clear();*/
+/*                }*/
+/*        }*/
+	mvaddstr( 0, 0, "Any key to start testing..........." );
+
 
 	while ( TRUE ) {
 		ch = getch();
