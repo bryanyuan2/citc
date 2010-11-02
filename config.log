@@ -283,8 +283,8 @@ configure:9616: checking how to hardcode library paths into programs
 configure:9641: result: immediate
 configure:9760: checking for shl_load
 configure:9816: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccoiPQ1A.o: In function `main':
-/home/king/opensource_game/citc/conftest.c:58: undefined reference to `shl_load'
+/tmp/ccZ11jhe.o: In function `main':
+/home/king/opensource/citc/conftest.c:58: undefined reference to `shl_load'
 collect2: ld returned 1 exit status
 configure:9822: $? = 1
 configure: failed program was:
@@ -397,8 +397,8 @@ configure: failed program was:
 configure:9903: result: no
 configure:9908: checking for dlopen
 configure:9964: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccrhGKeF.o: In function `main':
-/home/king/opensource_game/citc/conftest.c:58: undefined reference to `dlopen'
+/tmp/ccCpwX0h.o: In function `main':
+/home/king/opensource/citc/conftest.c:58: undefined reference to `dlopen'
 collect2: ld returned 1 exit status
 configure:9970: $? = 1
 configure: failed program was:
@@ -478,8 +478,8 @@ configure:10320: checking whether a statically linked program can dlopen itself
 configure:10394: gcc -o conftest -g -O2  -DHAVE_DLFCN_H  -Wl,--export-dynamic -static conftest.c -ldl -lcurl -lyajl  >&5
 configure: In function 'main':
 configure:10390: warning: incompatible implicit declaration of built-in function 'exit'
-/tmp/cc5KWTbW.o: In function `main':
-/home/king/opensource_game/citc/configure:10378: warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
+/tmp/cc6eZW1y.o: In function `main':
+/home/king/opensource/citc/configure:10378: warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking
 /usr/lib/gcc/i686-pc-linux-gnu/4.4.3/../../../../i686-pc-linux-gnu/bin/ld: cannot find -lyajl
 collect2: ld returned 1 exit status
 configure:10397: $? = 1
@@ -758,15 +758,15 @@ lt_cv_sys_max_cmd_len=1572864
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/king/opensource_game/citc/autotools/missing --run aclocal-1.10'
+ACLOCAL='${SHELL} /home/king/opensource/citc/autotools/missing --run aclocal-1.10'
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
-AMTAR='${SHELL} /home/king/opensource_game/citc/autotools/missing --run tar'
+AMTAR='${SHELL} /home/king/opensource/citc/autotools/missing --run tar'
 AR='ar'
-AUTOCONF='${SHELL} /home/king/opensource_game/citc/autotools/missing --run autoconf'
-AUTOHEADER='${SHELL} /home/king/opensource_game/citc/autotools/missing --run autoheader'
-AUTOMAKE='${SHELL} /home/king/opensource_game/citc/autotools/missing --run automake-1.10'
+AUTOCONF='${SHELL} /home/king/opensource/citc/autotools/missing --run autoconf'
+AUTOHEADER='${SHELL} /home/king/opensource/citc/autotools/missing --run autoheader'
+AUTOMAKE='${SHELL} /home/king/opensource/citc/autotools/missing --run automake-1.10'
 AWK='gawk'
 CC='gcc'
 CCDEPMODE='depmode=gcc3'
@@ -817,7 +817,7 @@ LIBTOOL_DEPS='autotools/ltmain.sh'
 LIBTOOL_EXPORT_OPTIONS='-export-symbols-regex "^[^_].*"'
 LN_S='ln -s'
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/king/opensource_game/citc/autotools/missing --run makeinfo'
+MAKEINFO='${SHELL} /home/king/opensource/citc/autotools/missing --run makeinfo'
 NCURSESW_CFLAGS='-I/usr/include'
 NCURSESW_LIBS='-L/usr/lib -lncursesw'
 NM='/usr/bin/nm -B'
@@ -867,7 +867,7 @@ host_vendor='pc'
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='$(SHELL) /home/king/opensource_game/citc/autotools/install-sh'
+install_sh='$(SHELL) /home/king/opensource/citc/autotools/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'

@@ -39,7 +39,7 @@
 #define JSON_RECVD_KEY 1
 #define JSON_RECVD_PHRASES 2
 
-#define LOOKUP 0
+#define LOOKUP 0 
 #define UPDATE 1
 #define INSERT 2
 
@@ -49,6 +49,7 @@ CURL *curl;
 UserPhraseData entry[PAGE_ENTRIES];
 char entry_id[PAGE_ENTRIES][64], json_flag = 0;
 int entries = 0, entry_pos = 0;
+unsigned int counts=1;
 
 #if 0
 static int DeltaFreq( int recentTime )
@@ -204,7 +205,7 @@ size_t post_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 
 	memcpy(buf, ptr, size * nmemb);
 	buf[size * nmemb] = '\0';
-
+/*        printf("post_callback: %s\n",buf);*/
 	// process json here
 	hand = yajl_alloc(&callbacks, &cfg,  NULL, NULL);
 	stat = yajl_parse(hand, buf, size * nmemb);
@@ -232,37 +233,46 @@ size_t post_quiet_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
  * TODO: persistent connection
  *
  * */
-int sendPostCurl(int op, char *key, const char wordSeq[])
-{
+int sendPostCurl(int op, char *key, const char wordSeq[]) {
 	CURLcode res;
 	char postbuf[1024];
 	char *server_url;
 	FILE* fpn;
 	char *buf;
-/*        printf("------>%s\n",key);*/
 	if(!curl)
 		curl = curl_easy_init();
 
 	if(curl)
 	{
-		if( getenv("CHEWING_USER_FEEDBACK") != null ){
+		if( getenv("CHEWING_USER_FEEDBACK") != "null" ){
 			switch(op)
 			{
-				case LOOKUP: sprintf(postbuf, "op=0&key=%s", key); break;
-				case UPDATE: sprintf(postbuf, "op=1&choice=%s", key); break;
-				case INSERT: sprintf(postbuf, "op=2&key=%s&insert=%s", key, wordSeq);	break;
-				default: break;
+				case LOOKUP: 
+					sprintf(postbuf, "op=0&key=%s",key); 
+					break;
+				case UPDATE: 
+					sprintf(postbuf, "op=1&choice=%s", key); 
+					break;
+				case INSERT: 
+					sprintf(postbuf, "op=2&key=%s&insert=%s", key, wordSeq);	
+					break;
+				default: 
+					break;
 			}
 		}
 		else{
 			switch(op)
 			{
-				case LOOKUP: sprintf(postbuf, "op=0&key=%s", key); break;
-				default: break;
+				case LOOKUP: 
+					sprintf(postbuf, "op=0&key=%s", key); 
+					break;
+				default: 
+					break;
 			}
 		}
 		curl_easy_setopt(curl, CURLOPT_URL, getenv("CHEWING_SERVER_URL") ? getenv("CHEWING_SERVER_URL") : SERVER_URL);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
+/*                printf("postbuf: %s\n",postbuf);*/
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, op == LOOKUP ? post_callback : post_quiet_callback);
 		res = curl_easy_perform(curl);
 
@@ -293,8 +303,10 @@ int curlUpdate(const char wordSeq[])
 
 	for(i = 0 ; i < PAGE_ENTRIES; ++i)
 	{
-		if(strcmp(wordSeq, entry[i].wordSeq) == 0)
+		printf("%s\n",wordSeq);
+		if(strcmp(wordSeq, entry[i].wordSeq) == 0) {
 			break;
+		}
 	}
 
 	return sendPostCurl(UPDATE, entry_id[i], NULL);
@@ -315,7 +327,7 @@ int UserUpdatePhrase( const uint16 phoneSeq[], const char wordSeq[] )
 {
 	char buf[256];
 	KenCodeFromUint(buf, phoneSeq);
-
+/*        printf("%s\n",wordSeq);*/
 	if(json_flag == JSON_RECVD_PHRASES)
 	{
 		if(curlUpdate(wordSeq) < 0)
@@ -353,7 +365,6 @@ int UserUpdatePhrase( const uint16 phoneSeq[], const char wordSeq[] )
 UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 {
 	int i, len = phoneSeqLen(phoneSeq);
-
 	char buf[256];
 	KenCodeFromUint(buf, phoneSeq);
 /*        printf("UserGetPhraseFirst: %s\n", buf);*/
@@ -370,43 +381,43 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 			return NULL;
 		return &(pItemLast->data);
 	}
-
-	if(!PhoneSeqTheSame(entry[0].phoneSeq, phoneSeq))
-	{
-		json_flag = JSON_NULL;
-		entries = 0;
-		entry_pos = 0;
-		for(i = 0; i < PAGE_ENTRIES; ++i)
+	else {
+		if(!PhoneSeqTheSame(entry[0].phoneSeq, phoneSeq))
 		{
-			if(entry[i].phoneSeq != NULL)
-				free(entry[i].phoneSeq);
+			json_flag = JSON_NULL;
+			entries = 0;
+			entry_pos = 0;
+			for(i = 0; i < PAGE_ENTRIES; ++i)
+			{
+				if(entry[i].phoneSeq != NULL)
+					free(entry[i].phoneSeq);
 
-			entry[i].phoneSeq = (uint16 *)calloc(len, sizeof(uint16));
+				entry[i].phoneSeq = (uint16 *)calloc(len, sizeof(uint16));
 
-			memcpy(entry[i].phoneSeq, phoneSeq, len * sizeof(uint16));
+				memcpy(entry[i].phoneSeq, phoneSeq, len * sizeof(uint16));
 
-			if(entry[i].wordSeq != NULL)
-				free(entry[i].wordSeq);
+				if(entry[i].wordSeq != NULL)
+					free(entry[i].wordSeq);
 
-			entry[i].wordSeq = (char *)calloc(256, sizeof(char));
-			// we don't have frequency information from the backend yet:
-			srand(time(0));
-			entry[i].maxfreq = MAX_ALLOW_FREQ;
-			entry[i].origfreq = 1;
-			entry[i].recentTime = chewing_lifetime - 1;
-			entry[i].userfreq = MAX_ALLOW_FREQ;
-		}
+				entry[i].wordSeq = (char *)calloc(256, sizeof(char));
+				// we don't have frequency information from the backend yet:
+				srand(time(0));
+				entry[i].maxfreq = MAX_ALLOW_FREQ;
+				entry[i].origfreq = 1;
+				entry[i].recentTime = chewing_lifetime - 1;
+				entry[i].userfreq = MAX_ALLOW_FREQ;
+			}
 
-		if(curlLookup(phoneSeq) < 0 || entries == 0)
-		{
-			printf("Lookup Failed.\n");
-			pItemLast = HashFindPhonePhrase(phoneSeq, NULL);
-			if (!pItemLast)
-				return NULL;
-			return &(pItemLast->data);
+			if(curlLookup(phoneSeq) < 0 || entries == 0)
+			{
+/*                                printf("Lookup Failed.\n");*/
+				pItemLast = HashFindPhonePhrase(phoneSeq, NULL);
+				if (!pItemLast)
+					return NULL;
+				return &(pItemLast->data);
+			}
 		}
 	}
-
 	return &(entry[0]);
 }
 
