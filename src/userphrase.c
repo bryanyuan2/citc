@@ -171,13 +171,11 @@ static int phrase(void * ctx, const unsigned char * stringVal, unsigned int stri
 	{
 		char crc_key[256];
 		strncpy(crc_key, stringVal, stringLen);
-/*                printf("Retrieved page for \"%s\"\n", crc_key);*/
 		json_flag = JSON_RECVD_KEY;
 	}
 	else
 	{
 		strncpy(entry[entries].wordSeq, stringVal, stringLen);
-/*                printf(", phrase: \"%s\"\n", entry[entries].wordSeq);*/
 		++entries; // only after parsing the phrase
 		json_flag = JSON_RECVD_PHRASES;
 	}
@@ -205,7 +203,7 @@ size_t post_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 
 	memcpy(buf, ptr, size * nmemb);
 	buf[size * nmemb] = '\0';
-/*        printf("post_callback: %s\n",buf);*/
+
 	// process json here
 	hand = yajl_alloc(&callbacks, &cfg,  NULL, NULL);
 	stat = yajl_parse(hand, buf, size * nmemb);
@@ -230,9 +228,8 @@ size_t post_quiet_callback(void *ptr, size_t size, size_t nmemb, void *userdata)
 
 /*
  * send request to remote server
- * TODO: persistent connection
  *
- * */
+ */
 int sendPostCurl(int op, char *key, const char wordSeq[]) {
 	CURLcode res;
 	char postbuf[1024];
@@ -244,7 +241,7 @@ int sendPostCurl(int op, char *key, const char wordSeq[]) {
 
 	if(curl)
 	{
-		if( getenv("CHEWING_USER_FEEDBACK") != "null" ){
+		if( getenv("CHEWING_USER_FEEDBACK") != NULL ){
 			switch(op)
 			{
 				case LOOKUP: 
@@ -272,7 +269,6 @@ int sendPostCurl(int op, char *key, const char wordSeq[]) {
 		}
 		curl_easy_setopt(curl, CURLOPT_URL, getenv("CHEWING_SERVER_URL") ? getenv("CHEWING_SERVER_URL") : SERVER_URL);
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postbuf);
-/*                printf("postbuf: %s\n",postbuf);*/
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, op == LOOKUP ? post_callback : post_quiet_callback);
 		res = curl_easy_perform(curl);
 
@@ -329,8 +325,9 @@ int curlInsert(const uint16 phoneSeq[], const char wordSeq[])
 int UserUpdatePhrase( const uint16 phoneSeq[], const char wordSeq[] )
 {
 	char buf[256];
+
 	KenCodeFromUint(buf, phoneSeq);
-/*        printf("%s\n",wordSeq);*/
+
 	if(json_flag == JSON_RECVD_PHRASES)
 	{
 		if(curlUpdate(wordSeq) < 0)
@@ -369,9 +366,8 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 {
 	int i, len = phoneSeqLen(phoneSeq);
 	char buf[256];
-	KenCodeFromUint(buf, phoneSeq);
-/*        printf("UserGetPhraseFirst: %s\n", buf);*/
 
+	KenCodeFromUint(buf, phoneSeq);
 
 	if(len < 2)
 	{
@@ -433,10 +429,9 @@ UserPhraseData *UserGetPhraseFirst( const uint16 phoneSeq[] )
 UserPhraseData *UserGetPhraseNext( const uint16 phoneSeq[] ) 
 {
 	int i;
-
 	char buf[256];
+
 	KenCodeFromUint(buf, phoneSeq);
-/*        printf("UserGetPhraseNext: %s\n", buf);*/
 
 	if(PhoneSeqTheSame(entry[0].phoneSeq, phoneSeq))
 		return entry_pos < PAGE_ENTRIES ? &(entry[entry_pos++]) : NULL;
