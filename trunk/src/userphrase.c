@@ -287,8 +287,11 @@ int curlLookup(const uint16 phoneSeq[])
 {
 	char code_buf[phoneSeqLen(phoneSeq) * sizeof(uint16)], key[256];
 	KenCodeFromUint(code_buf, phoneSeq);
-	getCrc64(key, code_buf);
-	return sendPostCurl(LOOKUP, key, NULL);
+
+    /* send phone-code instead of crc-code */
+    //getCrc64(key, code_buf);
+	//return sendPostCurl(LOOKUP, key, NULL);
+    return sendPostCurl(LOOKUP, code_buf, NULL);
 }
 
 /*
