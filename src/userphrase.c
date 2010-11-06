@@ -290,7 +290,7 @@ int curlLookup(const uint16 phoneSeq[])
 
     /* send phone-code instead of crc-code */
     //getCrc64(key, code_buf);
-	//return sendPostCurl(LOOKUP, key, NULL);
+    //return sendPostCurl(LOOKUP, key, NULL);
     return sendPostCurl(LOOKUP, code_buf, NULL);
 }
 
