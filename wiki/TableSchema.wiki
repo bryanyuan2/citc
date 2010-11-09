@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#summary CitC table schema
 #labels Featured,Phase-Design,Phase-Implementation
 
 = Introduction =
